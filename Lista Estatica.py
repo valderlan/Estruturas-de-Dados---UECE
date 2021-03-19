@@ -1,176 +1,142 @@
 # em python 3 - disciplina Estrutura de Dados 1 - UECE 2020.1
-# estrutura que define um no
-class No: 
-    def __init__(self, dado):
-        self.dado = dado
-        self.proximo = None
-# estrutura que define uma lista encadeada
-class ListaEnc: 
-    def __init__(self):
-        self.inicio = None # guarda o inicio da lista
+# estrutura para uma lista estatica sequencial
+class ListaEst:
+    def __init__(self, maximo):
+        self.lista = [None] * maximo # define o tamanho máximo na lista dado pelo usuário
+        self.max = maximo # parâmetro definido pelo o usário para o tamanho da lista
         self.tamanho = 0 # guarda o tamanho da lista
-
-    def addF(self, elemento): # add um elemento no final da lista
-        no = No(elemento)
-        if self.inicio: #  insere elemento no final da lista quando já tem um elemento
-            ponteiro = self.inicio
-            while(ponteiro.proximo):
-                ponteiro = ponteiro.proximo
-            ponteiro.proximo = no
-        else: # insere o primeiro elemento na lista
-            self.inicio = no
+        
+    def addF(self,elemento): # adiciona um elemento no final da lista
+        if self.tamanho == self.max: # se lista cheia retorna a mensagem de erro
+            raise IndexError("A lista está cheia")
+        else:
+            self.lista[self.tamanho] = elemento # add o elemento no final da lista
         self.tamanho = self.tamanho + 1
     
-    def addI(self,elemento): # add um elemento no inicio da lista
-        no = No(elemento)
-        if self.inicio:
-            no.proximo = self.inicio
-            self.inicio = no
-        else: # insere o primeiro elemento na lista
-            self.inicio = no
+    def addI(self, elemento): # adiciona um elemento no inicio da lista
+        if self.tamanho == self.max:
+            raise IndexError("A lista está cheia")
+        else:
+            for i in range(self.tamanho, 0, -1):
+                self.lista[i] = self.lista[i-1] # faz os ajustes para deslocar os indices dos demais elementos 
+                self.lista[i-1] = self.lista[i]
+            self.lista[0] = elemento # adiciona no inicio da lista
         self.tamanho = self.tamanho + 1
 
-    def _getno(self, indice): # informa a posiçao do no onde se deseja encontrar
-        ponteiro = self.inicio # a busca se inicia no primeiro elemento
-        for i in range(indice):
-            if ponteiro:
-                ponteiro = ponteiro.proximo
-            else:
-                raise IndexError("Indice fora da lista")
-        return ponteiro
-
-    def inserir(self, indice, elemento): # insere o elemento de acordo com o indice informado
-        no = No(elemento)
-        if indice == 0:
+    def inserir(self, indice, elemento): # insere um elemento na posição desejada
+        if self.tamanho == self.max:
+            raise IndexError("A lista está cheia")
+        if indice == 0: # se for em zero, chama a função que adiciona no inicio
             self.addI(elemento)
-        elif indice == self.tamanho:
+        elif indice == self.tamanho: # se for no final, chama a função que adiciona no final
             self.addF(elemento)
-        elif indice > self.tamanho:
-            raise IndexError("indice fora da lista")
         else:
-            ponteiro = self._getno(indice-1)
-            no.proximo = ponteiro.proximo # guarda a ligação que estava entre os elementos
-            ponteiro.proximo = no # insere o elemento na posição
+            for i in range(self.tamanho, indice, -1): 
+                self.lista[i] = self.lista[i-1]
+                self.lista[i-1] = self.lista[i]
+            self.lista[indice] = elemento
             self.tamanho = self.tamanho + 1
 
+    def delF(self): # deleta o ultimo elemento da lista
+        if self.tamanho == 0: # se tamanho for zero, retorna uma mensagem de erro
+            raise IndexError("A lista está vazia")
+        else:
+            self.lista[self.tamanho - 1] = None
+        self.tamanho = self.tamanho - 1
+        
     def delI(self): # deleta o primeiro elemento da lista
-        if self.vazia():
+        if self.tamanho == 0:
             raise IndexError("A lista está vazia")
-        elif self.tamanho == 1:
-            self.inicio = None
         else:
-            self.inicio = self.inicio.proximo
+            self.lista[0] = None
+            for i in range(0, self.tamanho - 1, 1):
+                self.lista[i] = self.lista[i+1]
+                self.lista[i+1] = self.lista[i]
         self.tamanho = self.tamanho - 1
-
-    def delF(self):
-        if self.vazia():
-            raise IndexError("A lista está vazia")
-        elif self.tamanho == 1:
-            self.inicio = None
-        else:
-            ponteiro = self.inicio
-            while(True):
-                if ponteiro.proximo.proximo == None:
-                    break
-                ponteiro = ponteiro.proximo
-            ponteiro.proximo = None
-        self.tamanho = self.tamanho - 1
-
-    def indice(self, elemento):
-        ponteiro = self.inicio
-        i=0
-        while(ponteiro):
-            if ponteiro.dado == elemento:
-                return i
-            ponteiro = ponteiro.proximo
-            i = i + 1
+    
+    def indice(self, elemento): # retorna o indice do elemento procurado
+        for indice in range(self.tamanho):
+            if self.lista[indice] == elemento:
+                return indice # encontrando o elemento, retorna o indice
+            
         raise ValueError("{} não tá na lista".format(elemento))
     
     def delete(self,elemento): # deleta a primeira ocorrencia de um elemento na lista
-        if self.inicio == None:
-            raise ValueError("{} não tá na lista".format(elemento))
-        elif self.inicio.dado == elemento:
-            self.inicio = self.inicio.proximo
-            self.tamanho = self.tamanho - 1
-            return True
-        else:
-            anterior = self.inicio
-            ponteiro = self.inicio.proximo
-            while(ponteiro):
-                if ponteiro.dado == elemento:
-                    anterior.proximo = ponteiro.proximo
-                    ponteiro.proximo = None
-                anterior = ponteiro
-                ponteiro = ponteiro.proximo
-            self.tamanho = self.tamanho - 1
-            return True
-        raise ValueError("{} não tá na lista".format(elemento))
-    
-    def delind(self, indice): # função de remove o elemento do indice solicitado na lista
         if self.tamanho == 0:
-            self.vazia()
-        if indice > self.tamanho:
-            raise IndexError("Indide fora da lista")
-        elif indice == 0:
-            elemento = self.inicio.dado
-            self.inicio = self.inicio.proximo
-        else:
-            ponteiro = self._getno(indice-1)
-            elemento = ponteiro.proximo.dado
-            ponteiro.proximo = ponteiro.proximo.proximo
+            raise IndexError("A lista está vazia")
+        indice = self.indice(elemento)
+        self.lista[indice] = None
+        for i in range(indice, self.tamanho - 1, 1):
+            self.lista[i] = self.lista[i+1]
+            self.lista[i+1] = self.lista[i]
         self.tamanho = self.tamanho - 1
 
-    def vazia(self): # infroma se a lista tá vazia 
+    def delind(self, indice): # deleta o elemento do indice escolhido
+        if self.tamanho == 0:
+            raise IndexError("A lista está vazia")
+        if ((indice >= self.tamanho) or (indice < 0)):
+            raise IndexError("Indice fora da lista")
+        #elemento = self.lista[indice]
+        self.lista[indice] = None
+        for i in range(indice, self.tamanho - 1, 1):
+            self.lista[i] = self.lista[i+1]
+            self.lista[i+1] = self.lista[i]
+        self.tamanho = self.tamanho - 1
+
+    def limpar(self): # função para limpar toda a lista, onde os valores serão sobreescritos por None como no estado inicial
+        for i in range(self.tamanho):
+            self.lista[i] = None
+        self.tamanho = 0 # reseta a quantidade de elementos
+    
+    def repetidos(self, elemento): # função que verifica elementos repetidos
+        quant = 0
+        for i in range(self.tamanho):
+            if self.lista[i] == elemento:
+                quant = quant + 1
+        return quant # se houver elemento repetido, a função irá retornar um valor diferente de zero
+    
+    def vazia(self): # verifica se a lista está vázia
         if self.tamanho == 0:
             return True
         return False
-
-    def limpar(self): # função para limpar toda a lista
-        self.inicio = None
-        self.proximo = None
-        self.tamanho = 0
    
-    def repetidos(self, elemento): # função que verifica elementos repetidos
-        ponteiro = self.inicio
-        quant = 0
-        while(ponteiro !=None):
-            if ponteiro.dado == elemento:
-                quant = quant + 1
-            ponteiro = ponteiro.proximo
-        return quant # se houver elemento repetido, a função irá retornar um valor diferente de zero
-
-    def __del__(self): # destroi a lista
+    def __del__(self): # função que exluir toda a lista
+        # del lista
         return 0
-    
+
     def __getitem__(self, indice): # retorna o valor da posição
         # lista[3]
         # >>> 6
-        ponteiro = self._getno(indice)
-        if ponteiro:
-            return ponteiro.dado
-        raise IndexError("Indice fora da lista")
+        if ((indice >= self.tamanho) or (indice < 0)):
+            raise IndexError("Indice fora da lista")
+        else:
+            return self.lista[indice]
 
     def __setitem__(self, indice, elemento): # função que sobreescreve o valor na posição
         # lista[3] = 9
         # 9 sobreescreve o valor 6
-        ponteiro = self._getno(indice)
-        if ponteiro:
-            ponteiro.dado = elemento
-        else:
+        if ((indice >= self.tamanho) or (indice < 0)):
             raise IndexError("Indice fora da lista")
+        else:
+            self.lista[indice] = elemento
 
-    def __len__(self): #retorna o tamanho da lista
+    def __len__(self): # retorna com o tamanho da lista
+        # len(lista)
         return self.tamanho
-
+    
     def __repr__(self): # função para representar a lista
         if self.tamanho > 0:
-            representacao = ""
-            ponteiro = self.inicio
-            while(ponteiro):
-                representacao = representacao + str(ponteiro.dado) + "->"
-                ponteiro = ponteiro.proximo
+            representacao = "["
+            for i in range(0, self.tamanho):
+                if i != self.tamanho -1:
+                    ponteiro = self.lista[i]
+                    representacao = representacao + str(ponteiro) + ", "
+                else:
+                    ponteiro = self.lista[i]
+                    representacao = representacao + str(ponteiro)
+            representacao = representacao + "]"      
             return representacao
-        return "Lista vazia"
+        return "Lista Vazia"
 
     def __str__(self):
         return self.__repr__()
